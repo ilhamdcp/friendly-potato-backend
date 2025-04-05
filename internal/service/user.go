@@ -38,6 +38,11 @@ func (us *UserServiceImpl) CreateUser(ctx context.Context, user *domain.User) (*
 		user.UserPin = fmt.Sprintf("%x", hash.Sum(nil))
 	}
 
+	existingUser, _ := us.userRepo.GetByID(ctx, user.UserPin)
+	if existingUser != nil {
+		return nil, errors.New("user already exists")
+	}
+
 	result, err := us.userRepo.Create(ctx, user)
 	return result, err
 }
