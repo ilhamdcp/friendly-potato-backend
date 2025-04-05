@@ -32,14 +32,12 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.userService.CreateUser(r.Context(), &user)
+	newUser, err := h.userService.CreateUser(r.Context(), &user)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user)
+	h.ReturnJSON(w, newUser)
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -64,8 +62,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	h.ReturnJSON(w, user)
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -98,8 +95,7 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	h.ReturnJSON(w, true)
 }
 
 func (h *Handler) HelloWorld(w http.ResponseWriter, r *http.Request) {
@@ -108,6 +104,13 @@ func (h *Handler) HelloWorld(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Hello, World!"))
+}
+
+func (h *Handler) ReturnJSON(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(data)
 }

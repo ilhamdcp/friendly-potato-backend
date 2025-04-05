@@ -17,12 +17,20 @@ func NewUserRepository(client *firestore.Client) *UserRepositoryImpl {
 	}
 }
 
-func (r *UserRepositoryImpl) Create(ctx context.Context, user *User) error {
-	_, err := r.client.Collection("users").NewDoc().Create(ctx, user)
+func (r *UserRepositoryImpl) Create(ctx context.Context, user *User) (*User, error) {
+	ref := r.client.Collection("users").NewDoc()
+	user.ID = ref.ID
+	_, err := ref.Set(ctx, user)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	snapshot, _ := r.client.Collection("users").Doc(ref.ID).Get(ctx)
+	var newUser User
+	if err := snapshot.DataTo(&newUser); err != nil {
+		return nil, err
+	}
+	return &newUser, nil
 }
 
 func (r *UserRepositoryImpl) GetByID(ctx context.Context, id string) (*User, error) {
