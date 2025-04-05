@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -28,10 +29,11 @@ func main() {
 	defer client.Close()
 	userRepository := NewUserRepository(client)
 	userService := service.NewUserServiceImpl(userRepository)
-	userHandler := NewUserHandler(userService)
-	http.HandleFunc("/users", userHandler.CreateUser)
-	http.HandleFunc("/users/{id}", userHandler.GetUser)
-	http.HandleFunc("/users/{id}/update", userHandler.UpdateUser)
-	http.HandleFunc("/users/signin", userHandler.SignInWithGoogle)
+	handler := NewHandler(userService)
+	http.HandleFunc("/users", handler.HelloWorld)
+	http.HandleFunc("/hello-world", handler.CreateUser)
+	http.HandleFunc("/users/{id}", handler.GetUser)
+	http.HandleFunc("/users/{id}/update", handler.UpdateUser)
+	fmt.Println("server running at 8080")
 	http.ListenAndServe(":8080", nil)
 }
