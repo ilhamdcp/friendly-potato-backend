@@ -37,15 +37,15 @@ func (us *UserServiceImpl) CreateUser(ctx context.Context, user *domain.User) (*
 	}
 	user.Password = string(hashedPassword)
 
-	if user.UserPin != "" {
-		hashedPin, err := bcrypt.GenerateFromPassword([]byte(user.UserPin), bcrypt.DefaultCost)
+	if user.Pin != "" {
+		hashedPin, err := bcrypt.GenerateFromPassword([]byte(user.Pin), bcrypt.DefaultCost)
 		if err != nil {
 			return nil, err
 		}
-		user.UserPin = string(hashedPin)
+		user.Pin = string(hashedPin)
 	}
 
-	existingUser, _ := us.userRepo.GetByID(ctx, user.UserPin)
+	existingUser, _ := us.userRepo.GetByID(ctx, user.Pin)
 	if existingUser != nil {
 		return nil, errors.New("user already exists")
 	}
