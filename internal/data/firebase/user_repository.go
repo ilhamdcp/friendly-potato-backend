@@ -42,6 +42,8 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id string) (*User, err
 	if err := doc.DataTo(&user); err != nil {
 		return nil, err
 	}
+	user.Password = ""
+	user.UserPin = ""
 	return &user, nil
 }
 
@@ -66,4 +68,19 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, user *User) error {
 		return err
 	}
 	return nil
+}
+
+func (r *UserRepositoryImpl) GetByUserName(ctx context.Context, username string) (*User, error) {
+	doc, err := r.client.Collection("users").Where("Username", "==", username).Limit(1).Documents(ctx).GetAll()
+	if err != nil {
+		return nil, err
+	}
+	if len(doc) == 0 {
+		return nil, nil
+	}
+	var user User
+	if err := doc[0].DataTo(&user); err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

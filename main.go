@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"cloud.google.com/go/firestore"
 	. "github.com/ilhamdcp/friendly-potato/internal/data/firebase"
 	. "github.com/ilhamdcp/friendly-potato/internal/delivery/http"
 	"github.com/ilhamdcp/friendly-potato/internal/service"
+	"github.com/joho/godotenv"
 )
 
 func generateClient(ctx context.Context) *firestore.Client {
@@ -27,13 +29,22 @@ func generateClient(ctx context.Context) *firestore.Client {
 func main() {
 	client := generateClient(context.Background())
 	defer client.Close()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	userRepository := NewUserRepository(client)
-	userService := service.NewUserServiceImpl(userRepository)
+	userService := service.NewUserServiceImpl(userRepository, os.Getenv("HASH_SECRET"))
 	handler := NewHandler(userService)
 	http.HandleFunc("/users", handler.CreateUser)
 	http.HandleFunc("/hello-world", handler.HelloWorld)
 	http.HandleFunc("/users/{id}", handler.GetUser)
 	http.HandleFunc("/users/{id}/update", handler.UpdateUser)
+	http.HandleFunc("/users/auth", handler.AuthenticateUser)
+	http.HandleFunc("/users/sign-in", handler.SignInUser)
+	http.HandleFunc("/users/sign-out", handler.SignOutUser)
 	fmt.Println("server running at 8080")
 	http.ListenAndServe(":8080", nil)
 }
