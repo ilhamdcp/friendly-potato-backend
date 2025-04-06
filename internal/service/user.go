@@ -2,11 +2,10 @@ package service
 
 import (
 	"context"
-	"crypto/sha256"
 	"errors"
-	"fmt"
 
 	"github.com/ilhamdcp/friendly-potato/internal/domain"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServiceImpl struct {
@@ -28,14 +27,18 @@ func (us *UserServiceImpl) CreateUser(ctx context.Context, user *domain.User) (*
 		return nil, errors.New("password cannot be empty")
 	}
 
-	hash := sha256.New()
-
-	hash.Write([]byte(user.Password))
-	user.Password = fmt.Sprintf("%x", hash.Sum(nil))
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = string(hashedPassword)
 
 	if user.UserPin != "" {
-		hash.Write([]byte(user.UserPin))
-		user.UserPin = fmt.Sprintf("%x", hash.Sum(nil))
+		hashedPin, err := bcrypt.GenerateFromPassword([]byte(user.UserPin), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, err
+		}
+		user.UserPin = string(hashedPin)
 	}
 
 	existingUser, _ := us.userRepo.GetByID(ctx, user.UserPin)
@@ -53,6 +56,7 @@ func (us *UserServiceImpl) GetUser(ctx context.Context, id string) (*domain.User
 	}
 	return us.userRepo.GetByID(ctx, id)
 }
+
 func (us *UserServiceImpl) UpdateUser(ctx context.Context, user *domain.User) error {
 	return us.userRepo.Update(ctx, user)
 }
