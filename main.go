@@ -37,7 +37,9 @@ func main() {
 
 	userRepository := NewUserRepository(client)
 	userService := service.NewUserServiceImpl(userRepository, os.Getenv("HASH_SECRET"))
-	handler := NewHandler(userService)
+	friendshipRepository := NewFriendshipRepository(client)
+	friendshipService := service.NewFriendshipServiceImpl(friendshipRepository)
+	handler := NewHandler(userService, friendshipService)
 	http.HandleFunc("/users", handler.CreateUser)
 	http.HandleFunc("/hello-world", handler.HelloWorld)
 	http.HandleFunc("/users/{id}", handler.GetUser)
@@ -45,6 +47,9 @@ func main() {
 	http.HandleFunc("/users/auth", handler.AuthenticateUser)
 	http.HandleFunc("/users/sign-in", handler.SignInUser)
 	http.HandleFunc("/users/sign-out", handler.SignOutUser)
+	http.HandleFunc("/friends/list", handler.GetFriends)
+	http.HandleFunc("/friends/add", handler.AddFriend)
+	http.HandleFunc("/friends/remove", handler.RemoveFriend)
 	fmt.Println("server running at 8080")
 	http.ListenAndServe(":8080", nil)
 }
