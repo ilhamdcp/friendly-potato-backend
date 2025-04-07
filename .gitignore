@@ -27,3 +27,5 @@ go.work.sum
 *.gpg
 .vscode
 .env*
+
+*.DS_Store

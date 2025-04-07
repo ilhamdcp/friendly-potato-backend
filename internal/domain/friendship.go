@@ -7,9 +7,9 @@ import (
 
 type Friendship struct {
 	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	FriendID  string    `json:"friend_id"`
-	CreatedAt time.Time `json:"created_at"`
+	UserID    string    `json:"userId"`
+	FriendID  string    `json:"friendId"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 type FriendshipRepository interface {
