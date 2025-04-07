@@ -8,18 +8,7 @@ import (
 
 	"github.com/ilhamdcp/friendly-potato/internal/domain"
 	"github.com/ilhamdcp/friendly-potato/internal/dto"
-	"github.com/ilhamdcp/friendly-potato/internal/service"
 )
-
-type Handler struct {
-	userService *service.UserServiceImpl
-}
-
-func NewHandler(userService *service.UserServiceImpl) *Handler {
-	return &Handler{
-		userService: userService,
-	}
-}
 
 func (h *Handler) ReturnJSON(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")

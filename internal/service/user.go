@@ -10,19 +10,28 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserServiceImpl struct {
+type UserService interface {
+	CreateUser(ctx context.Context, user *domain.User) (*domain.User, error)
+	GetUser(ctx context.Context, id string) (*domain.User, error)
+	UpdateUser(ctx context.Context, user *domain.User) error
+	SignInUser(ctx context.Context, user *domain.User) (map[string]string, error)
+	SignOutUser(ctx context.Context, username string) (bool, error)
+	AuthenticateUser(ctx context.Context, token string) bool
+}
+
+type userServiceImpl struct {
 	userRepo   domain.UserRepository
 	hashSecret string
 }
 
-func NewUserServiceImpl(userRepo domain.UserRepository, hashSecret string) *UserServiceImpl {
-	return &UserServiceImpl{
+func NewUserServiceImpl(userRepo domain.UserRepository, hashSecret string) *userServiceImpl {
+	return &userServiceImpl{
 		userRepo:   userRepo,
 		hashSecret: hashSecret,
 	}
 }
 
-func (us *UserServiceImpl) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
+func (us *userServiceImpl) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
 	if user.Username == "" {
 		return nil, errors.New("username cannot be empty")
 	}
@@ -63,18 +72,18 @@ func (us *UserServiceImpl) CreateUser(ctx context.Context, user *domain.User) (*
 	return result, err
 }
 
-func (us *UserServiceImpl) GetUser(ctx context.Context, id string) (*domain.User, error) {
+func (us *userServiceImpl) GetUser(ctx context.Context, id string) (*domain.User, error) {
 	if id == "" {
 		return nil, errors.New("user ID cannot be empty")
 	}
 	return us.userRepo.GetByID(ctx, id)
 }
 
-func (us *UserServiceImpl) UpdateUser(ctx context.Context, user *domain.User) error {
+func (us *userServiceImpl) UpdateUser(ctx context.Context, user *domain.User) error {
 	return us.userRepo.Update(ctx, user)
 }
 
-func (us *UserServiceImpl) SignInUser(ctx context.Context, user *domain.User) (map[string]string, error) {
+func (us *userServiceImpl) SignInUser(ctx context.Context, user *domain.User) (map[string]string, error) {
 	if user.Username == "" {
 		return nil, errors.New("username cannot be empty")
 	}
@@ -116,7 +125,7 @@ func (us *UserServiceImpl) SignInUser(ctx context.Context, user *domain.User) (m
 	return map[string]string{"token": existingUser.Token}, nil
 }
 
-func (us *UserServiceImpl) SignOutUser(ctx context.Context, username string) (bool, error) {
+func (us *userServiceImpl) SignOutUser(ctx context.Context, username string) (bool, error) {
 	if username == "" {
 		return false, errors.New("username cannot be empty")
 	}
@@ -138,7 +147,7 @@ func (us *UserServiceImpl) SignOutUser(ctx context.Context, username string) (bo
 	return true, nil
 }
 
-func (us *UserServiceImpl) AuthenticateUser(ctx context.Context, token string) bool {
+func (us *userServiceImpl) AuthenticateUser(ctx context.Context, token string) bool {
 	if token == "" {
 		return false
 	}
