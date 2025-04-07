@@ -14,19 +14,21 @@ func (h *Handler) AddContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var friendship domain.Contact
-	err := json.NewDecoder(r.Body).Decode(&friendship)
+	var contact domain.Contact
+	err := json.NewDecoder(r.Body).Decode(&contact)
 	if err != nil {
 		h.ErrorJSON(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if friendship.Username == "" || friendship.ContactUsername == "" {
+	contact.Username = h.userService.AuthenticateUser(r.Context(), r.Header.Get("Authorization"))
+
+	if contact.Username == "" || contact.ContactUsername == "" {
 		h.ErrorJSON(w, "Username and contactUsername are required", http.StatusBadRequest)
 		return
 	}
 
-	data, err := h.contactService.AddContact(r.Context(), &friendship)
+	data, err := h.contactService.AddContact(r.Context(), &contact)
 	if err != nil {
 		h.ErrorJSON(w, fmt.Sprintf("Failed to add friend: %v", err), http.StatusInternalServerError)
 		return
@@ -41,19 +43,20 @@ func (h *Handler) RemoveContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var friendship domain.Contact
-	err := json.NewDecoder(r.Body).Decode(&friendship)
+	var contact domain.Contact
+	err := json.NewDecoder(r.Body).Decode(&contact)
 	if err != nil {
 		h.ErrorJSON(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+	contact.Username = h.userService.AuthenticateUser(r.Context(), r.Header.Get("Authorization"))
 
-	if friendship.Username == "" || friendship.ContactUsername == "" {
+	if contact.Username == "" || contact.ContactUsername == "" {
 		h.ErrorJSON(w, "Username and contactUsernname are required", http.StatusBadRequest)
 		return
 	}
 
-	err = h.contactService.RemoveContact(r.Context(), &friendship)
+	err = h.contactService.RemoveContact(r.Context(), &contact)
 	if err != nil {
 		h.ErrorJSON(w, fmt.Sprintf("Failed to remove friend: %v", err), http.StatusInternalServerError)
 		return
@@ -68,7 +71,7 @@ func (h *Handler) GetContacts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := r.URL.Query().Get("username")
+	username := h.userService.AuthenticateUser(r.Context(), r.Header.Get("Authorization"))
 	if username == "" {
 		h.ErrorJSON(w, "Username is required", http.StatusBadRequest)
 		return

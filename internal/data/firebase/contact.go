@@ -42,7 +42,7 @@ func (fr *ContactRepositoryImpl) RemoveContact(ctx context.Context, contact *Con
 }
 
 func (fr *ContactRepositoryImpl) GetContacts(ctx context.Context, username string) ([]*Contact, error) {
-	snapshot, err := fr.client.Collection("users").Where("Username", "==", username).Documents(ctx).GetAll()
+	snapshot, err := fr.client.Collection("contacts").Where("Username", "==", username).Documents(ctx).GetAll()
 	if err != nil {
 		return nil, err
 	}

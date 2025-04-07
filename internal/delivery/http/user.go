@@ -56,7 +56,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if valid := h.userService.AuthenticateUser(r.Context(), r.Header.Get("Authorization")); !valid {
+	if valid := h.userService.AuthenticateUser(r.Context(), r.Header.Get("Authorization")); valid == "" {
 		h.ErrorJSON(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}

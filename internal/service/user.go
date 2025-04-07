@@ -16,7 +16,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, user *domain.User) error
 	SignInUser(ctx context.Context, user *domain.User) (map[string]string, error)
 	SignOutUser(ctx context.Context, username string) (bool, error)
-	AuthenticateUser(ctx context.Context, token string) bool
+	AuthenticateUser(ctx context.Context, token string) string
 }
 
 type userServiceImpl struct {
@@ -147,9 +147,9 @@ func (us *userServiceImpl) SignOutUser(ctx context.Context, username string) (bo
 	return true, nil
 }
 
-func (us *userServiceImpl) AuthenticateUser(ctx context.Context, token string) bool {
+func (us *userServiceImpl) AuthenticateUser(ctx context.Context, token string) string {
 	if token == "" {
-		return false
+		return ""
 	}
 
 	if len(token) > 7 && token[:7] == "Bearer " {
@@ -161,31 +161,31 @@ func (us *userServiceImpl) AuthenticateUser(ctx context.Context, token string) b
 		return []byte("secret"), nil
 	})
 	if err != nil {
-		return false
+		return ""
 	}
 
 	if !tkn.Valid {
-		return false
+		return ""
 	}
 
 	user, err := us.userRepo.GetByUserName(ctx, claims.Subject)
 	if err != nil {
-		return false
+		return ""
 	}
 
 	if user == nil {
-		return false
+		return ""
 	}
 
 	exp, err := claims.GetExpirationTime()
 	if err != nil {
-		return false
+		return ""
 	}
 	if exp.Before(time.Now()) {
 		user.Token = ""
 		us.userRepo.Update(ctx, user)
-		return false
+		return ""
 	}
 
-	return true
+	return user.Username
 }
