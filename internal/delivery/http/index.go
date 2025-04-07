@@ -3,13 +3,13 @@ package http
 import "github.com/ilhamdcp/friendly-potato/internal/service"
 
 type Handler struct {
-	userService       service.UserService
-	friendshipService service.FriendshipService
+	userService    service.UserService
+	contactService service.ContactService
 }
 
-func NewHandler(userService service.UserService, friendshipService service.FriendshipService) *Handler {
+func NewHandler(userService service.UserService, contactService service.ContactService) *Handler {
 	return &Handler{
-		userService:       userService,
-		friendshipService: friendshipService,
+		userService:    userService,
+		contactService: contactService,
 	}
 }

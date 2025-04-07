@@ -8,25 +8,25 @@ import (
 	"github.com/ilhamdcp/friendly-potato/internal/domain"
 )
 
-func (h *Handler) AddFriend(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddContact(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		h.ErrorJSON(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var friendship domain.Friendship
+	var friendship domain.Contact
 	err := json.NewDecoder(r.Body).Decode(&friendship)
 	if err != nil {
 		h.ErrorJSON(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if friendship.UserID == "" || friendship.FriendID == "" {
-		h.ErrorJSON(w, "User ID and Friend ID are required", http.StatusBadRequest)
+	if friendship.Username == "" || friendship.ContactUsername == "" {
+		h.ErrorJSON(w, "Username and contactUsername are required", http.StatusBadRequest)
 		return
 	}
 
-	data, err := h.friendshipService.AddFriend(r.Context(), &friendship)
+	data, err := h.contactService.AddContact(r.Context(), &friendship)
 	if err != nil {
 		h.ErrorJSON(w, fmt.Sprintf("Failed to add friend: %v", err), http.StatusInternalServerError)
 		return
@@ -35,50 +35,50 @@ func (h *Handler) AddFriend(w http.ResponseWriter, r *http.Request) {
 	h.ReturnJSON(w, data)
 }
 
-func (h *Handler) RemoveFriend(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) RemoveContact(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		h.ErrorJSON(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var friendship domain.Friendship
+	var friendship domain.Contact
 	err := json.NewDecoder(r.Body).Decode(&friendship)
 	if err != nil {
 		h.ErrorJSON(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if friendship.UserID == "" || friendship.FriendID == "" {
-		h.ErrorJSON(w, "User ID and Friend ID are required", http.StatusBadRequest)
+	if friendship.Username == "" || friendship.ContactUsername == "" {
+		h.ErrorJSON(w, "Username and contactUsernname are required", http.StatusBadRequest)
 		return
 	}
 
-	err = h.friendshipService.RemoveFriend(r.Context(), &friendship)
+	err = h.contactService.RemoveContact(r.Context(), &friendship)
 	if err != nil {
 		h.ErrorJSON(w, fmt.Sprintf("Failed to remove friend: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	h.ReturnJSON(w, "Friend removed successfully")
+	h.ReturnJSON(w, "Contact removed successfully")
 }
 
-func (h *Handler) GetFriends(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetContacts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		h.ErrorJSON(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	userID := r.URL.Query().Get("userID")
-	if userID == "" {
-		h.ErrorJSON(w, "User ID is required", http.StatusBadRequest)
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		h.ErrorJSON(w, "Username is required", http.StatusBadRequest)
 		return
 	}
 
-	friends, err := h.friendshipService.GetFriends(r.Context(), userID)
+	contacts, err := h.contactService.GetContacts(r.Context(), username)
 	if err != nil {
 		h.ErrorJSON(w, fmt.Sprintf("Failed to get friends: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	h.ReturnJSON(w, friends)
+	h.ReturnJSON(w, contacts)
 }
